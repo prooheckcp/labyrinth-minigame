@@ -102,10 +102,9 @@ void LoadUsers(char buffer[]) {
 		char currentCharacter = buffer[i];
 
 		if (currentCharacter == DATA_USER_BREAK) {
-			cout << "Ended user!";
 			players.push_back(nextUser);
 			currentArgument = 0;
-			nextUser = PlayerInfo();
+			//nextUser = PlayerInfo();
 			continue;
 		}
 		else if (currentCharacter == DATA_BREAKER) {
@@ -122,7 +121,7 @@ void LoadUsers(char buffer[]) {
 		}
 		else if (currentArgument == 1) {
 			//AVATAR
-			nextUser.avatar = currentArgument;
+			nextUser.avatar = currentCharacter;
 		}
 		else if (currentArgument == 2) {
 			//X
@@ -154,11 +153,7 @@ void HandleServerConnection(SOCKET server) {
 				LoadUsers(buffer);
 				break;
 		}
-		//DrawWorld();
-		cout << "User amount: " << players.size() << endl;
-		cout << "avatar: " << players.at(0).avatar << endl;
-		cout << "User X: " << players.at(0).positionx << endl;
-		cout << "User Y: " << players.at(0).positiony << endl;
+		DrawWorld();
 	}
 	cout << "Server commited seppuku" << endl;
 }
