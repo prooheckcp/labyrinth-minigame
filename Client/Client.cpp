@@ -182,9 +182,6 @@ void UpdateUser(char buffer[]) {
 			break;
 		}
 	}
-
-
-
 }
 
 void HandleServerConnection(SOCKET server) {
