@@ -1,27 +1,27 @@
+//Includes||
 #include <iostream>
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <string>
-#include <list>
+#include <vector>
 #include <thread>
+//________||
 
+//Defines||
 #define MAXRECVBUFFER 1024
+//_______||
 
+//Namespaces||
 using namespace std;
+//__________||
 
-struct PlayerInfo {
-	int id;
-	char avatar;
-	int positionx;
-	int positiony;
-};
-
-list<PlayerInfo> players;
-int playerID = -1;
+//Constants||
+const char DATA_BREAKER = '\20';
+const char DATA_TYPE = '\18';
+const char WALL_CHAR = (char)178;
 
 const int WORLD_SIZE = 20;
-
-char world[WORLD_SIZE][WORLD_SIZE] =
+const char WORLD_MAP[WORLD_SIZE][WORLD_SIZE] =
 { { 'X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X' },
  { 'X',' ','X',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','X','X',' ',' ','X' },
  { 'X',' ','X',' ',' ',' ',' ','X',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','X' },
@@ -42,27 +42,41 @@ char world[WORLD_SIZE][WORLD_SIZE] =
  { 'X',' ',' ',' ',' ','X','X',' ',' ',' ',' ',' ','X','X','X','X',' ','X',' ','X' },
  { 'X',' ',' ','X',' ',' ',' ',' ','X','X',' ',' ',' ',' ',' ',' ',' ',' ',' ','X' },
  { 'X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X' } };
+//_________||
+
+//Structures||
+struct PlayerInfo {
+	int id;
+	char avatar;
+	int positionx;
+	int positiony;
+};
+//__________||
+
+//Variables||
+vector<PlayerInfo> players;
+int playerID = -1;
+//_________||
 
 void DrawWorld() {
 	system("cls");
 	for (int x = 0; x < WORLD_SIZE; x++) {
 		for (int y = 0; y < WORLD_SIZE; y++) {
-			if (world[x][y] == 'X')
-				cout << (char)178;
+			if (WORLD_MAP[x][y] == 'X')
+				cout << WALL_CHAR;
 			else {
 				bool foundPlayer = false;
-				for (list<PlayerInfo>::iterator it = players.begin(); it != players.end(); it++) {
-					if (it->positionx == x && it->positiony == y) {
-						cout << it->avatar;
+				for (int i = 0; i < players.size(); i++) {
+					PlayerInfo player = players.at(i);
+					if (player.positionx == x && player.positiony == y) {
+						cout << player.avatar;
 						foundPlayer = true;
 						break;
 					}
 				}
-
 				if (!foundPlayer)
-					cout << " ";
+					cout << ' ';
 			}
-
 		}
 		cout << endl;
 	}

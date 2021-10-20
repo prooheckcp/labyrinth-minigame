@@ -1,43 +1,36 @@
+/*CLIENT-SERVER MESSAGE PROTOCOL
+
+Server sends a userData for the client to update
+
+Client sends movement data
+
+*/
+
+//Includes||
 #include <iostream>
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <thread>
-#include <list>
+#include <vector>
 #include <string>
+//________||
 
+//Defines||
 #define MAXPENDINGCONNECTIONS 10
 #define MAXRECVBUFFER 1024
+//_______||
 
+//Namespaces||
 using namespace std;
+//__________||
 
-/*CLIENT-SERVER MESSAGE PROTOCOL
-
-CLIENT TO SERVER:
-MOVE_TYPE | ID |
-EXAMPLES: U|1, D|1, L|1, R|1
-
-SERVER TO CLIENT:
-CONNECTION CONFIRMATION:C|ID|AVATAR|posX|posY
-UPDATE PLAYERS: U|ID|AVATAR|posX|posY
-
-
-*/
-
-struct PlayerInfo {
-	SOCKET client;
-	int id;
-	char avatar;
-	int positionx;
-	int positiony;
-};
-
-list<PlayerInfo> players;
-int playerCount = 0;
-char playerAvatars = 'A';
+//Constants||
+const char DATA_BREAKER = '\20';
+const char DATA_TYPE = '\18';
+const char WALL_CHAR = (char)178;
 
 const int WORLD_SIZE = 20;
-
-char world[WORLD_SIZE][WORLD_SIZE] =
+const char WORLD_MAP[WORLD_SIZE][WORLD_SIZE] =
 { { 'X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X' },
  { 'X',' ','X',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','X','X',' ',' ','X' },
  { 'X',' ','X',' ',' ',' ',' ','X',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','X' },
@@ -58,35 +51,77 @@ char world[WORLD_SIZE][WORLD_SIZE] =
  { 'X',' ',' ',' ',' ','X','X',' ',' ',' ',' ',' ','X','X','X','X',' ','X',' ','X' },
  { 'X',' ',' ','X',' ',' ',' ',' ','X','X',' ',' ',' ',' ',' ',' ',' ',' ',' ','X' },
  { 'X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X','X' } };
+//_________||
+
+//Structs||
+struct PlayerInfo {
+	SOCKET client;
+	int id;
+	char avatar;
+	int positionx;
+	int positiony;
+};
+
+struct Vector2 {
+	int x;
+	int y;
+};
+//_______||
+
+//Variables||
+vector<PlayerInfo> players;
+int playerCount = 0;
+char playerAvatars = 'A';
+//_________||
 
 void DrawWorld() {
 	system("cls");
 	for (int x = 0; x < WORLD_SIZE; x++) {
 		for (int y = 0; y < WORLD_SIZE; y++) {
-			if (world[x][y] == 'X')
-				cout << (char)178;
+			if (WORLD_MAP[x][y] == 'X')
+				cout << WALL_CHAR;
 			else {
 				bool foundPlayer = false;
-				for (list<PlayerInfo>::iterator it = players.begin(); it != players.end(); it++) {
-					if (it->positionx == x && it->positiony == y) {
-						cout << it->avatar;
+				for (int i = 0; i < players.size(); i++) {
+					PlayerInfo player = players.at(i);
+					if (player.positionx == x && player.positiony == y) {
+						cout << player.avatar;
 						foundPlayer = true;
 						break;
 					}
 				}
-	
-				if(!foundPlayer)
-					cout << " ";
+				if (!foundPlayer)
+					cout << ' ';
 			}
-				
 		}
 		cout << endl;
 	}
 }
 
+Vector2 GetEmptySpot() {
+	for (int x = 0; x < WORLD_SIZE; x++) {
+		for (int y = 0; y < WORLD_SIZE; y++) {
+			char worldSpot = WORLD_MAP[x][y];
+			if (worldSpot == ' ') {
+				bool foundPlayer = false;
+				for (int i = 0; i < players.size(); i++) {
+					PlayerInfo player = players.at(i);
+					if (player.positionx == x && player.positiony == y) {
+						foundPlayer = true;
+						break;
+					}
+				}
+				if (!foundPlayer)
+					return Vector2{ x, y };
+			}
+		}
+	}
+	return Vector2{1, 1};
+}
+
 void HandleClientConnection(PlayerInfo player)
 {
-	string message = "C|" + to_string(player.id) + "|" + player.avatar + "|" + to_string(player.positionx) + "|" + to_string(player.positiony) + "|";
+	string message = to_string(player.id) + "|" + to_string(player.positionx) + "|" + to_string(player.positiony) + "|";
 
 	if (send(player.client, message.c_str(), message.length() + 1, 0) == SOCKET_ERROR)
 	{
@@ -103,18 +138,22 @@ void HandleClientConnection(PlayerInfo player)
 
 int main()
 {
+	//Variables
 	SOCKET server;
 	SOCKADDR_IN serverAddr;
 	WSADATA wsaData;
+
 	if (WSAStartup(MAKEWORD(2, 0), &wsaData) != NO_ERROR)
 	{
 		cout << "WSAStartup failed!" << endl;
 		return 1;
 	}
+
 	server = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
 	if (server == SOCKET_ERROR)
 	{
-		cout << "socket failed!" << endl;
+		cout << "Socket failed!" << endl;
 		return 2;
 	}
 
@@ -122,18 +161,18 @@ int main()
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(3434);
 
-	if (bind(server, (struct sockaddr*)&serverAddr,
-		sizeof(serverAddr)) == SOCKET_ERROR)
+	if (bind(server, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)
 	{
-		cout << "bind failed!" << endl;
+		cout << "Bind failed!" << endl;
 		return 3;
 	}
 
 	if (listen(server, MAXPENDINGCONNECTIONS) == SOCKET_ERROR)
 	{
-		cout << "listen failed!" << endl;
+		cout << "Listen failed!" << endl;
 		return 4;
 	}
+
 	cout << "Server Started!" << endl;
 
 	while (true)
@@ -154,16 +193,20 @@ int main()
 		
 			PlayerInfo player;
 			player.client = client;
-			player.positionx = 1;
-			player.positiony = 1;
 			player.id = playerCount++;
 			player.avatar = playerAvatars++;
+
+			Vector2 emptyPosition = GetEmptySpot();
+			player.positionx = emptyPosition.x;
+			player.positiony = emptyPosition.y;
 
 			players.push_back(player);
 			DrawWorld();
 			thread* clientThread = new thread(HandleClientConnection, player);
 		}
 	}
+	
+	//The server closed
 	WSACleanup();
 	return 0;
 }
