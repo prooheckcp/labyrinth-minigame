@@ -16,13 +16,13 @@ using namespace std;
 //__________||
 
 //Constants||
-const char DATA_TYPE_START = '\14';
-const char DATA_TYPE_UPDATE = '\15';
-const char DATA_TYPE_END = '\16';
+const char DATA_TYPE_START = (char)196;
+const char DATA_TYPE_UPDATE = (char)197;
+const char DATA_TYPE_END = (char)198;
 
-const char DATA_END = '\18';
-const char DATA_USER_BREAK = '19';
-const char DATA_BREAKER = '\20';
+const char DATA_END = (char)199;
+const char DATA_USER_BREAK = (char)200;
+const char DATA_BREAKER = (char)201;
 
 const char WALL_CHAR = (char)178;
 const char EMPTY_SPOT = ' ';
@@ -109,6 +109,9 @@ void LoadUsers(char buffer[]) {
 		char currentCharacter = buffer[i];
 
 		if (currentCharacter == DATA_USER_BREAK) {
+
+			cout << userPosY << endl;
+
 			nextUser.id = stoi(userID);
 			nextUser.positionx = stoi(userPosX);
 			nextUser.positiony = stoi(userPosY);

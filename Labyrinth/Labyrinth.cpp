@@ -33,13 +33,13 @@ const char MOVE_LEFT = 'a';
 const char MOVE_DOWN = 's';
 
 //datatypes
-const char DATA_TYPE_START = '\14';
-const char DATA_TYPE_UPDATE = '\15';
-const char DATA_TYPE_END = '\16';
+const char DATA_TYPE_START = (char)196;
+const char DATA_TYPE_UPDATE = (char)197;
+const char DATA_TYPE_END = (char)198;
 
-const char DATA_END = '\18';
-const char DATA_USER_BREAK = '19';
-const char DATA_BREAKER = '\20';
+const char DATA_END = (char)199;
+const char DATA_USER_BREAK = (char)200;
+const char DATA_BREAKER = (char)201;
 
 const char WALL_CHAR = (char)178;
 const char EMPTY_SPOT = ' ';
@@ -165,6 +165,7 @@ void SendWholeMap(PlayerInfo player) {
 
 	for (int i = 0; i < players.size(); i++) {
 		PlayerInfo user = players.at(i);
+
 		message.append(to_string(user.id));
 		message.push_back(DATA_BREAKER);
 		message.push_back(user.avatar);
