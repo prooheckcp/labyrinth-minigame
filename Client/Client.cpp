@@ -17,7 +17,7 @@ using namespace std;
 
 //Constants||
 const char DATA_BREAKER = '\20';
-const char DATA_TYPE = '\18';
+const char DATA_END = '\18';
 const char WALL_CHAR = (char)178;
 
 const int WORLD_SIZE = 20;
@@ -50,6 +50,11 @@ struct PlayerInfo {
 	char avatar;
 	int positionx;
 	int positiony;
+};
+
+struct Vector2 {
+	int x;
+	int y;
 };
 //__________||
 

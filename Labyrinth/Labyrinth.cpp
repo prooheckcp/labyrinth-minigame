@@ -25,8 +25,13 @@ using namespace std;
 //__________||
 
 //Constants||
+
+//datatypes
+const char DATA_TYPE_UPDATE = '\15';
+
 const char DATA_BREAKER = '\20';
-const char DATA_TYPE = '\18';
+const char DATA_END = '\18';
+
 const char WALL_CHAR = (char)178;
 
 const int WORLD_SIZE = 20;
@@ -119,14 +124,29 @@ Vector2 GetEmptySpot() {
 	return Vector2{1, 1};
 }
 
+//Updates the clients with a certain user
+void SendUpdatedUser(PlayerInfo player) {
+	// ID |	X | Y |
+	string message = "";
+	message.push_back(DATA_TYPE_UPDATE);
+	message.append(to_string(player.id));
+	message.push_back(DATA_BREAKER);
+	message.append(to_string(player.positionx));
+	message.push_back(DATA_BREAKER);
+	message.append(to_string(player.positiony));
+	message.push_back(DATA_END);
+
+	for (int i = 0; i < players.size(); i++) {
+		PlayerInfo user = players.at(i);
+		if (send(user.client, message.c_str(), message.length(), 0))
+			cout << "Message sending failed!" << endl;
+	}
+}
+
 void HandleClientConnection(PlayerInfo player)
 {
-	string message = to_string(player.id) + "|" + to_string(player.positionx) + "|" + to_string(player.positiony) + "|";
-
-	if (send(player.client, message.c_str(), message.length() + 1, 0) == SOCKET_ERROR)
-	{
-		cout << "send failed!" << endl;
-	}
+	//Update the clients
+	SendUpdatedUser(player);
 
 	char buffer[MAXRECVBUFFER];
 	while (recv(player.client, buffer, MAXRECVBUFFER, 0) > 0)
