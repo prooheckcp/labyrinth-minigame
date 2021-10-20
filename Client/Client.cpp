@@ -16,8 +16,13 @@ using namespace std;
 //__________||
 
 //Constants||
+const char DATA_TYPE_START = '\14';
+const char DATA_TYPE_UPDATE = '\15';
+const char DATA_TYPE_END = '\16';
+
 const char DATA_BREAKER = '\20';
 const char DATA_END = '\18';
+
 const char WALL_CHAR = (char)178;
 
 const int WORLD_SIZE = 20;
@@ -87,12 +92,29 @@ void DrawWorld() {
 	}
 }
 
+//Parsers
+void LoadUsers(char buffer[]) {
+
+}
+
+void UpdateUser(char buffer[]) {
+
+}
+
 void HandleServerConnection(SOCKET server) {
 
 	char buffer[MAXRECVBUFFER];
 	while (recv(server, buffer, MAXRECVBUFFER, 0) > 0)
 	{
-		cout << "Message: " << buffer << endl;
+		char dataType = buffer[0];
+		switch (dataType) {
+			case DATA_TYPE_UPDATE:
+				UpdateUser(buffer);
+				break;
+			case DATA_TYPE_START:
+				LoadUsers(buffer);
+				break;
+		}
 	}
 	cout << "Server commited seppuku" << endl;
 }

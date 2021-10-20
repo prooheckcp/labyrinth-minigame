@@ -27,10 +27,13 @@ using namespace std;
 //Constants||
 
 //datatypes
+const char DATA_TYPE_START = '\14';
 const char DATA_TYPE_UPDATE = '\15';
+const char DATA_TYPE_END = '\16';
 
-const char DATA_BREAKER = '\20';
 const char DATA_END = '\18';
+const char DATA_USER_BREAK = '19';
+const char DATA_BREAKER = '\20';
 
 const char WALL_CHAR = (char)178;
 
@@ -125,7 +128,7 @@ Vector2 GetEmptySpot() {
 }
 
 //Updates the clients with a certain user
-void SendUpdatedUser(PlayerInfo player) {
+void SendUpdatedUser(PlayerInfo player, bool sendToUser) {
 	// ID |	X | Y |
 	string message = "";
 	message.push_back(DATA_TYPE_UPDATE);
@@ -138,15 +141,42 @@ void SendUpdatedUser(PlayerInfo player) {
 
 	for (int i = 0; i < players.size(); i++) {
 		PlayerInfo user = players.at(i);
+
+		if (!sendToUser && user.client == player.client)
+			continue;
+
 		if (send(user.client, message.c_str(), message.length(), 0))
 			cout << "Message sending failed!" << endl;
 	}
 }
 
+//Sends all the current users data
+void SendWholeMap(PlayerInfo player) {
+	//ID | avatar | X | Y 
+	string message = "";
+	message.push_back(DATA_TYPE_START);
+
+	for (int i = 0; i < players.size(); i++) {
+		PlayerInfo user = players.at(i);
+		message.append(to_string(user.id));
+		message.push_back(DATA_BREAKER);
+		message.push_back(user.avatar);
+		message.push_back(DATA_BREAKER);
+		message.append(to_string(user.positionx));
+		message.push_back(DATA_BREAKER);
+		message.append(to_string(user.positiony));
+		message.push_back(DATA_USER_BREAK);
+	}
+
+	if (send(player.client, message.c_str(), message.length(), 0))
+		cout << "Map sending failed!" << endl;
+}
+
 void HandleClientConnection(PlayerInfo player)
 {
 	//Update the clients
-	SendUpdatedUser(player);
+	SendUpdatedUser(player, false);
+	SendWholeMap(player);
 
 	char buffer[MAXRECVBUFFER];
 	while (recv(player.client, buffer, MAXRECVBUFFER, 0) > 0)
