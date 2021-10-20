@@ -96,6 +96,9 @@ void DrawWorld() {
 //Parsers
 void LoadUsers(char buffer[]) {
 	
+	//Cleaning the players socket
+	players.clear();
+
 	PlayerInfo nextUser;
 	int currentArgument = 0;
 	for (int i = 1; i < MAXRECVBUFFER; i++) {
@@ -136,6 +139,46 @@ void LoadUsers(char buffer[]) {
 }
 
 void UpdateUser(char buffer[]) {
+
+	PlayerInfo updatedUser;
+	int currentArgument = 0;
+	for (int i = 1; i < MAXRECVBUFFER; i++) {
+		char currentCharacter = buffer[i];
+
+		if (currentCharacter == DATA_BREAKER) {
+			currentArgument++;
+			continue;
+		}
+		else if (currentCharacter == DATA_END) {
+			break;
+		}
+
+		if (currentArgument == 0) {
+			//ID
+			updatedUser.id = currentCharacter - '0';
+		}
+		else if (currentArgument == 1) {
+			//X
+			updatedUser.positionx = currentCharacter;
+		}
+		else if (currentArgument == 2) {
+			//Y
+			updatedUser.positiony = currentCharacter - '0';
+		}
+	}
+
+	bool foundUser = false;
+	for (int i = 0; i < players.size(); i++) {
+		PlayerInfo user = players.at(i);
+		if (updatedUser.id == user.id) {
+			user.positionx = updatedUser.positionx;
+			user.positiony = updatedUser.positiony;
+			foundUser = true;
+			break;
+		}
+	}
+
+
 
 }
 

@@ -174,17 +174,43 @@ void SendWholeMap(PlayerInfo player) {
 		cout << "Map sending failed!" << endl;
 }
 
+void RemoveUser(PlayerInfo player) {
+
+	for (int index = 0; index < players.size(); index++) {
+		PlayerInfo user = players.at(index);
+
+		if (user.client == player.client) {
+			players.erase(players.begin() + index);
+			break;
+		}
+
+	}
+
+	//Update the clients
+	for (int i = 0; i < players.size(); i++) {
+		SendWholeMap(players.at(i));
+	}
+
+	//Rebuild the map in the server
+	DrawWorld();
+}
+
 void HandleClientConnection(PlayerInfo player)
 {
 	//Update the clients
-	SendUpdatedUser(player, false);
-	SendWholeMap(player);
+	for (int i = 0; i < players.size(); i++) {
+		SendWholeMap(players.at(i));
+	}
 
 	char buffer[MAXRECVBUFFER];
 	while (recv(player.client, buffer, MAXRECVBUFFER, 0) > 0)
 	{
 		
 	}
+
+	
+	RemoveUser(player);
+
 	cout << "Player " << player.avatar << " disconnected!" << endl;
 }
 
