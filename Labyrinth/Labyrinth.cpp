@@ -26,6 +26,12 @@ using namespace std;
 
 //Constants||
 
+//player controls
+const char MOVE_UP = 'w';
+const char MOVE_RIGHT = 'r';
+const char MOVE_LEFT = 'a';
+const char MOVE_DOWN = 's';
+
 //datatypes
 const char DATA_TYPE_START = '\14';
 const char DATA_TYPE_UPDATE = '\15';
@@ -195,6 +201,35 @@ void RemoveUser(PlayerInfo player) {
 	DrawWorld();
 }
 
+void MovePlayer(PlayerInfo player, char direction) {
+
+	Vector2 predictedPosition{player.positionx, player.positiony};
+
+	switch (direction) {
+		case MOVE_UP:
+			predictedPosition.y++;
+			break;
+		case MOVE_RIGHT:
+			predictedPosition.x++;
+			break;
+		case MOVE_LEFT:
+			predictedPosition.x--;
+			break;
+		case MOVE_DOWN:
+			predictedPosition.y--;
+			break;
+		default:
+			return;
+	}
+
+	bool isEmpty = false;
+	bool hasPlayer = false;
+
+	if (WORLD_MAP[predictedPosition.x][predictedPosition.y] == ' ')
+		isEmpty = true;
+
+}
+
 void HandleClientConnection(PlayerInfo player)
 {
 	//Update the clients
@@ -205,7 +240,7 @@ void HandleClientConnection(PlayerInfo player)
 	char buffer[MAXRECVBUFFER];
 	while (recv(player.client, buffer, MAXRECVBUFFER, 0) > 0)
 	{
-		
+		MovePlayer(player, buffer[0]);
 	}
 
 	
