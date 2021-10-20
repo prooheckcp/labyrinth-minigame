@@ -100,14 +100,24 @@ void LoadUsers(char buffer[]) {
 	players.clear();
 
 	PlayerInfo nextUser;
+	string userID = "";
+	string userPosX = "";
+	string userPosY = "";
+
 	int currentArgument = 0;
 	for (int i = 1; i < MAXRECVBUFFER; i++) {
 		char currentCharacter = buffer[i];
 
 		if (currentCharacter == DATA_USER_BREAK) {
+			nextUser.id = stoi(userID);
+			nextUser.positionx = stoi(userPosX);
+			nextUser.positiony = stoi(userPosY);
 			players.push_back(nextUser);
 			currentArgument = 0;
-			//nextUser = PlayerInfo();
+			userID = "";
+			userPosX = "";
+			userPosY = "";
+			nextUser = PlayerInfo();
 			continue;
 		}
 		else if (currentCharacter == DATA_BREAKER) {
@@ -118,22 +128,14 @@ void LoadUsers(char buffer[]) {
 			break;
 		}
 
-		if (currentArgument == 0) {
-			//ID
-			nextUser.id = currentCharacter - '0';
-		}
-		else if (currentArgument == 1) {
-			//AVATAR
-			nextUser.avatar = currentCharacter;
-		}
-		else if (currentArgument == 2) {
-			//X
-			nextUser.positionx = currentCharacter - '0';
-		}
-		else if (currentArgument == 3) {
-			//Y
-			nextUser.positiony = currentCharacter - '0';
-		}
+		if (currentArgument == 0) 
+			userID.push_back(currentCharacter); //ID
+		else if (currentArgument == 1) 
+			nextUser.avatar = currentCharacter; //AVATAR
+		else if (currentArgument == 2)
+			userPosX.push_back(currentCharacter); //X
+		else if (currentArgument == 3) 
+			userPosY.push_back(currentCharacter); //Y
 
 	}
 }
