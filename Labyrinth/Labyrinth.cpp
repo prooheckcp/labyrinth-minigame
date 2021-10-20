@@ -202,7 +202,21 @@ void RemoveUser(PlayerInfo player) {
 	DrawWorld();
 }
 
-void MovePlayer(PlayerInfo player, char direction) {
+void MovePlayer(int playerID, char direction) {
+
+	PlayerInfo player;
+	bool foundplayer = false;
+	for (int i = 0; i < players.size(); i++) {
+		PlayerInfo& user = players.at(i);
+		if (user.id == playerID) {
+			player = user;
+			foundplayer = true;
+			break;
+		}
+	}
+
+	if (!foundplayer)
+		return;
 
 	Vector2 predictedPosition{player.positionx, player.positiony};
 
@@ -228,24 +242,37 @@ void MovePlayer(PlayerInfo player, char direction) {
 
 	if (WORLD_MAP[predictedPosition.y][predictedPosition.x] == EMPTY_SPOT)
 		isEmpty = true;
+	
 
 	for (int i = 0; i < players.size(); i++) {
 		PlayerInfo user = players.at(i);
 		if (user.positionx == predictedPosition.x && user.positiony == predictedPosition.y) {
+			cout << user.positionx << "," << user.positiony << endl;
+			cout << "There's a player here!" << endl;
 			hasPlayer = true;
 			break;
 		}
 	}
 
 	if (isEmpty && !hasPlayer) {
-		player.positionx = predictedPosition.x;
 		player.positiony = predictedPosition.y;
-		DrawWorld();
-		cout << "Position X: " << player.positionx << endl;
-		cout << "Position Y: " << player.positiony << endl;
-		cout << "Moved player!" << endl;
-	}
 
+		//Update player data
+		for (int i = 0; i < players.size(); i++) {
+			PlayerInfo& user = players.at(i);
+			if (user.id == player.id) {
+				user.positionx = predictedPosition.x;
+				user.positiony = predictedPosition.y;
+				break;
+			}
+		}
+		DrawWorld();
+
+		//Update the clients
+		for (int i = 0; i < players.size(); i++) {
+			SendWholeMap(players.at(i));
+		}
+	}
 }
 
 void HandleClientConnection(PlayerInfo player)
@@ -258,7 +285,7 @@ void HandleClientConnection(PlayerInfo player)
 	char buffer[MAXRECVBUFFER];
 	while (recv(player.client, buffer, MAXRECVBUFFER, 0) > 0)
 	{
-		MovePlayer(player, buffer[0]);
+		MovePlayer(player.id, buffer[0]);
 	}
 
 	
