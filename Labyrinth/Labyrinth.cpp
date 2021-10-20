@@ -28,7 +28,7 @@ using namespace std;
 
 //player controls
 const char MOVE_UP = 'w';
-const char MOVE_RIGHT = 'r';
+const char MOVE_RIGHT = 'd';
 const char MOVE_LEFT = 'a';
 const char MOVE_DOWN = 's';
 
@@ -42,6 +42,7 @@ const char DATA_USER_BREAK = '19';
 const char DATA_BREAKER = '\20';
 
 const char WALL_CHAR = (char)178;
+const char EMPTY_SPOT = ' ';
 
 const int WORLD_SIZE = 20;
 const char WORLD_MAP[WORLD_SIZE][WORLD_SIZE] =
@@ -98,14 +99,14 @@ void DrawWorld() {
 				bool foundPlayer = false;
 				for (int i = 0; i < players.size(); i++) {
 					PlayerInfo player = players.at(i);
-					if (player.positionx == x && player.positiony == y) {
+					if (player.positionx == y && player.positiony == x) {
 						cout << player.avatar;
 						foundPlayer = true;
 						break;
 					}
 				}
 				if (!foundPlayer)
-					cout << ' ';
+					cout << EMPTY_SPOT;
 			}
 		}
 		cout << endl;
@@ -115,7 +116,7 @@ void DrawWorld() {
 Vector2 GetEmptySpot() {
 	for (int x = 0; x < WORLD_SIZE; x++) {
 		for (int y = 0; y < WORLD_SIZE; y++) {
-			char worldSpot = WORLD_MAP[x][y];
+			char worldSpot = WORLD_MAP[y][x];
 			if (worldSpot == ' ') {
 				bool foundPlayer = false;
 				for (int i = 0; i < players.size(); i++) {
@@ -207,7 +208,7 @@ void MovePlayer(PlayerInfo player, char direction) {
 
 	switch (direction) {
 		case MOVE_UP:
-			predictedPosition.y++;
+			predictedPosition.y--;
 			break;
 		case MOVE_RIGHT:
 			predictedPosition.x++;
@@ -216,7 +217,7 @@ void MovePlayer(PlayerInfo player, char direction) {
 			predictedPosition.x--;
 			break;
 		case MOVE_DOWN:
-			predictedPosition.y--;
+			predictedPosition.y++;
 			break;
 		default:
 			return;
@@ -225,8 +226,25 @@ void MovePlayer(PlayerInfo player, char direction) {
 	bool isEmpty = false;
 	bool hasPlayer = false;
 
-	if (WORLD_MAP[predictedPosition.x][predictedPosition.y] == ' ')
+	if (WORLD_MAP[predictedPosition.y][predictedPosition.x] == EMPTY_SPOT)
 		isEmpty = true;
+
+	for (int i = 0; i < players.size(); i++) {
+		PlayerInfo user = players.at(i);
+		if (user.positionx == predictedPosition.x && user.positiony == predictedPosition.y) {
+			hasPlayer = true;
+			break;
+		}
+	}
+
+	if (isEmpty && !hasPlayer) {
+		player.positionx = predictedPosition.x;
+		player.positiony = predictedPosition.y;
+		DrawWorld();
+		cout << "Position X: " << player.positionx << endl;
+		cout << "Position Y: " << player.positiony << endl;
+		cout << "Moved player!" << endl;
+	}
 
 }
 

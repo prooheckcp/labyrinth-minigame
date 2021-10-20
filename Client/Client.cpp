@@ -25,6 +25,7 @@ const char DATA_USER_BREAK = '19';
 const char DATA_BREAKER = '\20';
 
 const char WALL_CHAR = (char)178;
+const char EMPTY_SPOT = ' ';
 
 const int WORLD_SIZE = 20;
 const char WORLD_MAP[WORLD_SIZE][WORLD_SIZE] =
@@ -79,20 +80,19 @@ void DrawWorld() {
 				bool foundPlayer = false;
 				for (int i = 0; i < players.size(); i++) {
 					PlayerInfo player = players.at(i);
-					if (player.positionx == x && player.positiony == y) {
+					if (player.positionx == y && player.positiony == x) {
 						cout << player.avatar;
 						foundPlayer = true;
 						break;
 					}
 				}
 				if (!foundPlayer)
-					cout << ' ';
+					cout << EMPTY_SPOT;
 			}
 		}
 		cout << endl;
 	}
 }
-
 //Parsers
 void LoadUsers(char buffer[]) {
 	
@@ -239,12 +239,8 @@ int main()
 	while (message != "exit")
 	{
 		getline(cin, message);
-		if (send(server, message.c_str(), message.length() + 1, 0) == SOCKET_ERROR)
-		{
-			cout << "send failed!" << endl;
-			return 4;
-		}
-		cout << "Message sent!" << endl;
+		if (send(server, message.c_str(), message.length(), 0) == SOCKET_ERROR)
+			cout << "Failed to send command!" << endl;
 	}
 	if (closesocket(server) == SOCKET_ERROR)
 	{
