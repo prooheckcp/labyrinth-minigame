@@ -20,8 +20,9 @@ const char DATA_TYPE_START = '\14';
 const char DATA_TYPE_UPDATE = '\15';
 const char DATA_TYPE_END = '\16';
 
-const char DATA_BREAKER = '\20';
 const char DATA_END = '\18';
+const char DATA_USER_BREAK = '19';
+const char DATA_BREAKER = '\20';
 
 const char WALL_CHAR = (char)178;
 
@@ -94,7 +95,45 @@ void DrawWorld() {
 
 //Parsers
 void LoadUsers(char buffer[]) {
+	
+	PlayerInfo nextUser;
+	int currentArgument = 0;
+	for (int i = 1; i < MAXRECVBUFFER; i++) {
+		char currentCharacter = buffer[i];
 
+		if (currentCharacter == DATA_USER_BREAK) {
+			cout << "Ended user!";
+			players.push_back(nextUser);
+			currentArgument = 0;
+			nextUser = PlayerInfo();
+			continue;
+		}
+		else if (currentCharacter == DATA_BREAKER) {
+			currentArgument++;
+			continue;
+		}
+		else if (currentCharacter == DATA_END) {
+			break;
+		}
+
+		if (currentArgument == 0) {
+			//ID
+			nextUser.id = currentCharacter - '0';
+		}
+		else if (currentArgument == 1) {
+			//AVATAR
+			nextUser.avatar = currentArgument;
+		}
+		else if (currentArgument == 2) {
+			//X
+			nextUser.positionx = currentCharacter - '0';
+		}
+		else if (currentArgument == 3) {
+			//Y
+			nextUser.positiony = currentCharacter - '0';
+		}
+
+	}
 }
 
 void UpdateUser(char buffer[]) {
@@ -115,6 +154,11 @@ void HandleServerConnection(SOCKET server) {
 				LoadUsers(buffer);
 				break;
 		}
+		//DrawWorld();
+		cout << "User amount: " << players.size() << endl;
+		cout << "avatar: " << players.at(0).avatar << endl;
+		cout << "User X: " << players.at(0).positionx << endl;
+		cout << "User Y: " << players.at(0).positiony << endl;
 	}
 	cout << "Server commited seppuku" << endl;
 }
@@ -149,7 +193,6 @@ int main()
 
 	cout << "Connected to Server!" << endl;
 
-	DrawWorld();
 	thread* serverThread = new thread(HandleServerConnection, server);
 
 	string message = "";

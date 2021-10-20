@@ -145,7 +145,7 @@ void SendUpdatedUser(PlayerInfo player, bool sendToUser) {
 		if (!sendToUser && user.client == player.client)
 			continue;
 
-		if (send(user.client, message.c_str(), message.length(), 0))
+		if (send(user.client, message.c_str(), message.length(), 0) == SOCKET_ERROR)
 			cout << "Message sending failed!" << endl;
 	}
 }
@@ -168,7 +168,9 @@ void SendWholeMap(PlayerInfo player) {
 		message.push_back(DATA_USER_BREAK);
 	}
 
-	if (send(player.client, message.c_str(), message.length(), 0))
+	message.push_back(DATA_END);
+
+	if (send(player.client, message.c_str(), message.length(), 0) == SOCKET_ERROR)
 		cout << "Map sending failed!" << endl;
 }
 
